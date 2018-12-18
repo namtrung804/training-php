@@ -1,0 +1,23 @@
+version: '3.7'
+
+services:
+    nginx:
+        image: namtrung/nginx-pagespeed
+        ports:
+        - "7000:80"
+        - '470:443'
+        working_dir: /app
+        volumes:
+        - ./docker-config/nginx/conf.d:/etc/nginx/conf.d
+        - ./:/app
+        - ./docker-config/logs:/var/log/nginx/
+        - ./docker-config/nginx/cache/ngx_pagespeed:/var/ngx_pagespeed_cache
+        links:
+        - php
+
+    php:
+        image: namtrung/php-phalcon:7.2-fpm
+        working_dir: /app
+        volumes:
+        - ./:/app
+        - ./docker-config/php/php.ini:/usr/local/etc/php/php.ini

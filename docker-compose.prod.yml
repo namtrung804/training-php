@@ -1,0 +1,24 @@
+version: '3.7'
+
+services:
+    database:
+        restart: always
+        ports:
+        - "3306:3306"
+
+    nginx:
+        restart: always
+        ports:
+        - "80:80"
+        - '443:443'
+
+    php:
+        restart: always
+
+    redis:
+        restart: always
+
+    nodejs:
+        restart: always
+        command: bash -c "yarn && bower i --allow-root && yarn prod"
+

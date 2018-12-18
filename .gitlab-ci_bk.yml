@@ -1,0 +1,22 @@
+types:
+  - build
+  - test
+  - deploy
+
+build:
+  type: build
+  only:
+    - master
+  script:
+    - cd /home/chuyengiacua
+    - bash docker-entrypoint.sh
+  tags:
+    - chuyengiacua-tag
+deploy:
+  type: deploy
+  script:
+    - cd /home/chuyengiacua
+  only:
+    - master
+  tags:
+    - chuyengiacua-tag

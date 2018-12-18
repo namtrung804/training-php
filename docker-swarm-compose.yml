@@ -1,0 +1,99 @@
+version: '3.7'
+
+services:
+    redis:
+      image: redis
+      ports:
+        - "6379:6379"
+    database:
+      image: 'bitnami/mysql:latest'
+      ports:
+        - "3306:3306"
+#      volumes:
+#        - mysqldb:/bitnami
+      environment:
+        - MYSQL_REPLICATION_MODE=master
+        - MYSQL_REPLICATION_USER=namtrung
+        - MYSQL_REPLICATION_PASSWORD=trannamtrung
+        - MYSQL_ROOT_PASSWORD=Namtrung804!@#
+        - MYSQL_USER=haihauser
+        - MYSQL_PASSWORD=haiha@123
+        - MYSQL_DATABASE=haihaevent
+
+    database-slave:
+      image: 'bitnami/mysql:latest'
+      ports:
+        - "3306"
+      depends_on:
+        - database
+      environment:
+        - MYSQL_REPLICATION_MODE=slave
+        - MYSQL_MASTER_HOST=database
+        - MYSQL_MASTER_PORT_NUMBER=3306
+        - MYSQL_REPLICATION_USER=namtrung
+        - MYSQL_REPLICATION_PASSWORD=trannamtrung
+        - MYSQL_MASTER_ROOT_PASSWORD=Namtrung804!@#
+
+    php:
+      image: namtrung/phalcon
+      working_dir: /app
+      volumes:
+        - ./source:/app
+        - ./conf/php/php.ini:/usr/local/etc/php/php.ini
+      depends_on:
+        - database
+        - redis
+
+    nginx:
+      image: namtrung/nginx-pagespeed
+      environment:
+        - SERVICE_PORTS=80
+      working_dir: /app
+      volumes:
+        - ./conf/nginx/conf.d:/etc/nginx/conf.d
+        - ./source:/app
+        - ./logs:/var/log/nginx/
+        - ./conf/nginx/cache/ngx_pagespeed:/var/ngx_pagespeed_cache
+      depends_on:
+        - php
+#      deploy:
+#         replicas: 10
+#         update_config:
+#           parallelism: 5
+#           delay: 10s
+#         restart_policy:
+#           condition: on-failure
+#           max_attempts: 3
+#           window: 120s
+
+    composer:
+      image: composer
+      command: install
+      working_dir: /app
+      volumes:
+          - ./source:/app
+
+    nodejs:
+      image: namtrung/yarn-bower-gulp
+      command: bash -c "yarn && bower i --allow-root && gulp "
+      working_dir: /app
+      volumes:
+        - ./source:/app
+
+    proxy:
+      image: dockercloud/haproxy
+      depends_on:
+        - nginx
+      environment:
+        - BALANCE=leastconn
+        - ADDITIONAL_SERVICES=project_dir:nginx
+        - STATS_AUTH="admin:password"
+      volumes:
+        - /var/run/docker.sock:/var/run/docker.sock
+      ports:
+        - 80:80
+        - 1936:1936
+
+#volumes:
+#  mysqldb:
+
