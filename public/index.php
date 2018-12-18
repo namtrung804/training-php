@@ -1,3 +1,4 @@
 <?php
-echo "Hello Vu";
+echo "Hello Vu <br/>";
+print "Mo Chim LEarning";
 ?>
